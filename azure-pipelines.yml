@@ -20,6 +20,7 @@ resources:
   - repository: azure_test
     type: github
     name: jgoldsmith613/azure_test
+    endpoint: jgoldsmith613
 
 stages:
 - stage: 'Build'
