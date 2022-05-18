@@ -19,7 +19,6 @@ resources:
   repositories:
   - repository: azure_test
     type: github
-    endpoint: MyGitHubServiceConnection
     name: jgoldsmith613/azure_test
 
 stages:
