@@ -15,6 +15,13 @@ variables:
   MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
   MAVEN_OPTS: '-Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
 
+resources:
+  repositories:
+  - repository: azure_test
+    type: github
+    endpoint: MyGitHubServiceConnection
+    name: jgoldsmith613/azure_test
+
 stages:
 - stage: 'Build'
   displayName: 'Build and push'
@@ -153,7 +160,7 @@ stages:
     pool:
       vmImage: 'ubuntu-latest'
     steps:
-    - checkout: self
+    - checkout: azure_test
       persistCredentials: true
 
     - script: |
@@ -161,16 +168,11 @@ stages:
       workingDirectory: $(System.DefaultWorkingDirectory)
 
     - script: |
-       mkdir test
-       cd test
-       git clone -b master https://github.com/jgoldsmith613/azure_test.git
-       cd azure_test
+       git checkout -b master
        echo 'This is a test' > data.txt
        git add -A
        git commit -m "deployment $(Build.BuildNumber)"
        git push --set-upstream origin master 
-       cd ../..
-       rm -rf test
       displayName: Add data.txt file
       workingDirectory: $(System.DefaultWorkingDirectory)
 
