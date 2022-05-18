@@ -148,7 +148,7 @@ stages:
   displayName: 'test git to Stage'
   dependsOn: Deploy_Stage
   jobs:
-  - deployment: git
+  - job: git
     displayName: git
     pool:
       vmImage: 'ubuntu-latest'
