@@ -194,6 +194,9 @@ stages:
     - script: |
        pwd
        ls
+       cd ..
+       pwd
+       ls
       displayName: Add data.txt file
       workingDirectory: $(System.DefaultWorkingDirectory)
  
