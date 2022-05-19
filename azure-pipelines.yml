@@ -164,6 +164,7 @@ stages:
     - checkout: azure_test
       persistCredentials: true
 
+
     - script: |
        git config --global user.email pipeline@demo.com & git config --global user.name "Pipeline"
       workingDirectory: $(System.DefaultWorkingDirectory)
@@ -174,8 +175,24 @@ stages:
        git add -A
        git commit -m "deployment $(Build.BuildNumber)"
        git push --set-upstream origin master 
+       cd ..
+       pwd
+       ls
+       touch testfile
       displayName: Add data.txt file
       workingDirectory: $(System.DefaultWorkingDirectory)
+  - job: shared-test
+    displayName: shared-test
+    pool:
+      vmImage: 'ubuntu-latest'
+    container: quay.io/wpernath/kustomize-ubi:latest
+    steps:
+    - script: |
+       pwd
+       ls
+      displayName: Add data.txt file
+      workingDirectory: $(System.DefaultWorkingDirectory)
+ 
 
 
 
