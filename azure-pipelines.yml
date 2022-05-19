@@ -209,6 +209,8 @@ stages:
        cd ..
        pwd
        ls -lsra
+       cd appleFiles
+       cat *
       displayName: Add data.txt file
       workingDirectory: $(System.DefaultWorkingDirectory)
  
