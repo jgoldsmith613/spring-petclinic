@@ -174,12 +174,23 @@ stages:
        git add -A
        git commit -m "deployment $(Build.BuildNumber)"
        git push --set-upstream origin master 
-       cd ..
        pwd
        ls
-       touch testfile
+       mkdir apple
+       cd apple
+       touch hello_i_made_it
+       touch goodbye
       displayName: Add data.txt file
       workingDirectory: $(System.DefaultWorkingDirectory)
+
+    - task: CopyFiles@2
+      displayName: 'Copy powershell scripts for later use in the pipeline'
+      inputs:
+        contents: 'apple/**'
+        targetFolder: '$(Build.ArtifactStagingDirectory)'
+    - publish: '$(Build.ArtifactStagingDirectory)/apple'
+      displayName: 'Publish scripts for later use'
+      artifact: appleFiles
 
 - stage: 'test_file'
   displayName: 'test file'
@@ -191,10 +202,9 @@ stages:
       vmImage: 'ubuntu-latest'
     steps:
     - checkout: none
+    - download: current
+      artifact: appleFiles
     - script: |
-       pwd
-       ls
-       cd ..
        pwd
        ls
       displayName: Add data.txt file
