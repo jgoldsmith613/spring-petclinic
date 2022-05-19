@@ -206,6 +206,8 @@ stages:
       artifact: appleFiles
     - script: |
        pwd
+       cd ..
+       pwd
        ls -lsra
       displayName: Add data.txt file
       workingDirectory: $(System.DefaultWorkingDirectory)
