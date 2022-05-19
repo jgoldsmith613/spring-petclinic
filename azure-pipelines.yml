@@ -178,8 +178,8 @@ stages:
        ls
        mkdir apple
        cd apple
-       touch hello_i_made_it
-       touch goodbye
+       echo "Some line hello" > hello_i_made_it
+       echo "Some line goodbye" >  goodbye
       displayName: Add data.txt file
       workingDirectory: $(System.DefaultWorkingDirectory)
 
@@ -206,7 +206,7 @@ stages:
       artifact: appleFiles
     - script: |
        pwd
-       ls
+       ls -lsra
       displayName: Add data.txt file
       workingDirectory: $(System.DefaultWorkingDirectory)
  
