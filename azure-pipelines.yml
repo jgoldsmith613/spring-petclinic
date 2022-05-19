@@ -159,7 +159,6 @@ stages:
     displayName: git
     pool:
       vmImage: 'ubuntu-latest'
-    container: quay.io/wpernath/kustomize-ubi:latest
     steps:
     - checkout: azure_test
       persistCredentials: true
@@ -181,12 +180,18 @@ stages:
        touch testfile
       displayName: Add data.txt file
       workingDirectory: $(System.DefaultWorkingDirectory)
+
+- stage: 'test_file'
+  displayName: 'test file'
+  dependsOn: test_git_Stage
+  jobs:
   - job: shared_test
     displayName: shared_test
     pool:
       vmImage: 'ubuntu-latest'
     container: quay.io/wpernath/kustomize-ubi:latest
     steps:
+    - checkout: none
     - script: |
        pwd
        ls
