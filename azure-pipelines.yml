@@ -200,6 +200,7 @@ stages:
     displayName: shared_test
     pool:
       vmImage: 'ubuntu-latest'
+    container: 'quay.io/wpernath/kustomize-ubi:latest'
     steps:
     - checkout: none
     - download: current
