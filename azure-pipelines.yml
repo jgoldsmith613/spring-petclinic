@@ -181,8 +181,8 @@ stages:
        touch testfile
       displayName: Add data.txt file
       workingDirectory: $(System.DefaultWorkingDirectory)
-  - job: shared-test
-    displayName: shared-test
+  - job: shared_test
+    displayName: shared_test
     pool:
       vmImage: 'ubuntu-latest'
     container: quay.io/wpernath/kustomize-ubi:latest
