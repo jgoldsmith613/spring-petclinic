@@ -149,8 +149,18 @@ stages:
   displayName: 'Deploy to Stage'
   dependsOn: Deploy_Dev
   jobs:
+  - job: approveStageDeploy
+    displayName: Approve Stage Deploy
+    steps:
+    - task: ManualValidation@0
+      timeoutInMinutes: 1440
+      inputs:
+       instructions: "Approve deployment to Stage?"
+       notifyUsers: |
+         jgoldsmi@redhat.com
   - deployment: Secret
     displayName: Create Image Pull Secret
+    dependsOn: approveStageDeploy
     pool:
       vmImage: 'ubuntu-latest'
     environment: 'openshift.stage'
@@ -212,6 +222,7 @@ stages:
           
           - script: |
               git checkout -b main
+              git pull origin main
               cp ../stage/* envs/stage/.
               git add -A
               git commit -m "deployment $(tag)"
