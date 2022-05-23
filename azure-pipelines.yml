@@ -139,7 +139,7 @@ stages:
               dockerRegistryEndpoint: 'azure-container-registry'
               kubernetesServiceConnection: 'openshift-stage-1652464815216'
               namespace: 'stage'
-  - deployment: update_git
+  - deployment: kustomize
     displayName: Update Kustomize Image
     pool:
       vmImage: 'ubuntu-latest'
@@ -159,7 +159,7 @@ stages:
           - publish: '$(Build.SourcesDirectory)/envs/stage'
             artifact: stage
   - deployment: update_git
-    displayName: Update Kustomize Image
+    displayName: Update git stage
     pool:
       vmImage: 'ubuntu-latest'
     environment: 'openshift.stage'
@@ -171,44 +171,16 @@ stages:
           steps:
           - checkout: config
             persistCredentials: true
+          - download: current
+            artifact: stage
+          - script: |
+              git config --global user.email pipeline@demo.com & git config --global user.name "Pipeline"
+            workingDirectory: $(System.DefaultWorkingDirectory)
+          
+          - script: |
+              git checkout -b main
+              cp ../stage/* envs/stage/.
+              git add -A
+              git commit -m "deployment $(tag)"
+              git push --set-upstream origin main
 
-- stage: 'test_git_Stage'
-  displayName: 'test git to Stage'
-  dependsOn: Deploy_Stage
-  jobs:
-  - job: git
-    displayName: git
-    pool:
-      vmImage: 'ubuntu-latest'
-    steps:
-    - checkout: azure_test
-      persistCredentials: true
-
-
-    - script: |
-       git config --global user.email pipeline@demo.com & git config --global user.name "Pipeline"
-      workingDirectory: $(System.DefaultWorkingDirectory)
-
-    - script: |
-       git checkout -b master
-       echo 'This is a test' > data.txt
-       git add -A
-       git commit -m "deployment $(Build.BuildNumber)"
-       git push --set-upstream origin master 
-       pwd
-       ls
-       mkdir apple
-       cd apple
-       echo "Some line hello" > hello_i_made_it
-       echo "Some line goodbye" >  goodbye
-      displayName: Add data.txt file
-      workingDirectory: $(System.DefaultWorkingDirectory)
-
-    - task: CopyFiles@2
-      displayName: 'Copy powershell scripts for later use in the pipeline'
-      inputs:
-        contents: 'apple/**'
-        targetFolder: '$(Build.ArtifactStagingDirectory)'
-    - publish: '$(Build.ArtifactStagingDirectory)/apple'
-      displayName: 'Publish scripts for later use'
-      artifact: appleFiles
