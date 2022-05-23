@@ -208,6 +208,7 @@ stages:
           
           - script: |
               git checkout -b main
+              git pull
               cp ../stage/* envs/stage/.
               git add -A
               git commit -m "deployment $(tag)"
