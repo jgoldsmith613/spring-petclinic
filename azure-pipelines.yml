@@ -87,8 +87,6 @@ stages:
       runOnce:
         deploy:
           steps:
-          - download: current
-            artifact: manifests
           - task: KubernetesManifest@0
             displayName: Create imagePullSecret
             inputs:
@@ -132,7 +130,7 @@ stages:
           - checkout: config
             persistCredentials: true
           - download: current
-            artifact: stage
+            artifact: dev
           - script: |
               git config --global user.email pipeline@demo.com & git config --global user.name "Pipeline"
             workingDirectory: $(System.DefaultWorkingDirectory)
@@ -160,8 +158,6 @@ stages:
       runOnce:
         deploy:
           steps:
-          - download: current
-            artifact: manifests
           - task: KubernetesManifest@0
             displayName: Create imagePullSecret
             inputs:
