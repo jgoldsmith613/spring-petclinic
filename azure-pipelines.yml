@@ -94,7 +94,7 @@ stages:
               secretName: $(imagePullSecret)
               dockerRegistryEndpoint: 'azure-container-registry'
               kubernetesServiceConnection: 'openshift-dev-1652736334320'
-              namespace: 'dev'
+              namespace: 'dev-argo'
   - deployment: kustomize
     displayName: Update Kustomize Image
     dependsOn: Secret
@@ -177,8 +177,8 @@ stages:
               action: createSecret
               secretName: $(imagePullSecret)
               dockerRegistryEndpoint: 'azure-container-registry'
-              kubernetesServiceConnection: 'openshift-stage-1652464815216'
-              namespace: 'stage'
+              kubernetesServiceConnection: 'openshift-dev-1652736334320'
+              namespace: 'stage-argo'
   - deployment: kustomize
     displayName: Update Kustomize Image
     dependsOn: Secret
