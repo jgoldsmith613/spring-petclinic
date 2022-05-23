@@ -200,6 +200,7 @@ stages:
           steps:
           - checkout: config
             persistCredentials: true
+            clean: true
           - download: current
             artifact: stage
           - script: |
@@ -208,7 +209,6 @@ stages:
           
           - script: |
               git checkout -b main
-              git pull origin main
               cp ../stage/* envs/stage/.
               git add -A
               git commit -m "deployment $(tag)"
