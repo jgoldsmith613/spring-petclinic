@@ -21,6 +21,10 @@ resources:
     type: github
     name: jgoldsmith613/azure_test
     endpoint: jgoldsmith613
+  - repository: config
+    type: github
+    name: jgoldsmith613/spring-petclinic-config
+    endpoint: jgoldsmith613
 
 stages:
 - stage: 'Build'
@@ -114,8 +118,8 @@ stages:
   displayName: 'Deploy to Stage'
   dependsOn: Deploy_Dev
   jobs:
-  - deployment: Deploy
-    displayName: Deploy
+  - deployment: Secret
+    displayName: Create Image Pull Secret
     pool:
       vmImage: 'ubuntu-latest'
     environment: 'openshift.stage'
@@ -135,22 +139,39 @@ stages:
               dockerRegistryEndpoint: 'azure-container-registry'
               kubernetesServiceConnection: 'openshift-stage-1652464815216'
               namespace: 'stage'
-          - task: KubernetesManifest@0
-            displayName: Deploy to Kubernetes cluster
-            inputs:
-              action: deploy
-              kubernetesServiceConnection: 'openshift-stage-1652464815216'
-              namespace: 'stage'
-              manifests: |
-                $(Pipeline.Workspace)/manifests/stage/cm.yaml
-                $(Pipeline.Workspace)/manifests/stage/secret.yaml
-                $(Pipeline.Workspace)/manifests/stage/deployment.yaml
-                $(Pipeline.Workspace)/manifests/stage/service.yaml
-              imagePullSecrets: |
-                $(imagePullSecret)
-              containers: |
-                $(ACR_RegistryName)/$(springPetRepository):$(tag)
-                $(ACR_RegistryName)/$(mySqlRepository):latest
+  - deployment: update_git
+    displayName: Update Kustomize Image
+    pool:
+      vmImage: 'ubuntu-latest'
+    container: 'quay.io/wpernath/kustomize-ubi:latest'
+    environment: 'openshift.stage'
+    variables:
+    - group: Release
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - checkout: config
+            persistCredentials: true
+          - script: |
+              cd envs/stage
+              kustomize edit set image $(ACR_RegistryName)/$(springPetRepository)=$(ACR_RegistryName)/$(springPetRepository):$(tag)
+          - publish: '$(Build.SourcesDirectory)/envs/stage'
+            artifact: stage
+  - deployment: update_git
+    displayName: Update Kustomize Image
+    pool:
+      vmImage: 'ubuntu-latest'
+    environment: 'openshift.stage'
+    variables:
+    - group: Release
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - checkout: config
+            persistCredentials: true
+
 - stage: 'test_git_Stage'
   displayName: 'test git to Stage'
   dependsOn: Deploy_Stage
@@ -191,26 +212,3 @@ stages:
     - publish: '$(Build.ArtifactStagingDirectory)/apple'
       displayName: 'Publish scripts for later use'
       artifact: appleFiles
-
-- stage: 'test_file'
-  displayName: 'test file'
-  dependsOn: test_git_Stage
-  jobs:
-  - job: shared_test
-    displayName: shared_test
-    pool:
-      vmImage: 'ubuntu-latest'
-    container: 'quay.io/wpernath/kustomize-ubi:latest'
-    steps:
-    - checkout: none
-    - download: current
-      artifact: appleFiles
-    - script: |
-       pwd
-       cd ..
-       pwd
-       ls -lsra
-       cd appleFiles
-       cat *
-      displayName: Add data.txt file
-      workingDirectory: $(System.DefaultWorkingDirectory)
