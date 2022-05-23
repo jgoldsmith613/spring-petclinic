@@ -76,8 +76,8 @@ stages:
   displayName: 'Deploy to Dev'
   dependsOn: Build
   jobs:
-  - deployment: Deploy
-    displayName: Deploy
+  - deployment: Secret
+    displayName: Create Image Pull Secret
     pool:
       vmImage: 'ubuntu-latest'
     environment: 'openshift.dev'
@@ -97,22 +97,53 @@ stages:
               dockerRegistryEndpoint: 'azure-container-registry'
               kubernetesServiceConnection: 'openshift-dev-1652736334320'
               namespace: 'dev'
-          - task: KubernetesManifest@0
-            displayName: Deploy to Kubernetes cluster
-            inputs:
-              action: deploy
-              kubernetesServiceConnection: 'openshift-dev-1652736334320'
-              namespace: 'dev'
-              manifests: |
-                $(Pipeline.Workspace)/manifests/dev/cm.yaml
-                $(Pipeline.Workspace)/manifests/dev/secret.yaml
-                $(Pipeline.Workspace)/manifests/dev/deployment.yaml
-                $(Pipeline.Workspace)/manifests/dev/service.yaml
-              imagePullSecrets: |
-                $(imagePullSecret)
-              containers: |
-                $(ACR_RegistryName)/$(springPetRepository):$(tag)
-                $(ACR_RegistryName)/$(mySqlRepository):latest
+  - deployment: kustomize
+    displayName: Update Kustomize Image
+    dependsOn: Secret
+    pool:
+      vmImage: 'ubuntu-latest'
+    container: 'quay.io/wpernath/kustomize-ubi:latest'
+    environment: 'openshift.dev'
+    variables:
+    - group: Release
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - checkout: config
+            persistCredentials: true
+          - script: |
+              cd envs/dev
+              kustomize edit set image $(ACR_RegistryName)/$(springPetRepository)=$(ACR_RegistryName)/$(springPetRepository):$(tag)
+          - publish: '$(Build.SourcesDirectory)/envs/dev'
+            artifact: dev
+  - deployment: update_git
+    displayName: Update git stage
+    dependsOn: kustomize
+    pool:
+      vmImage: 'ubuntu-latest'
+    environment: 'openshift.dev'
+    variables:
+    - group: Release
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - checkout: config
+            persistCredentials: true
+          - download: current
+            artifact: stage
+          - script: |
+              git config --global user.email pipeline@demo.com & git config --global user.name "Pipeline"
+            workingDirectory: $(System.DefaultWorkingDirectory)
+          
+          - script: |
+              git checkout -b main
+              cp ../dev/* envs/dev/.
+              git add -A
+              git commit -m "deployment $(tag)"
+              git push --set-upstream origin main
+
 
 - stage: 'Deploy_Stage'
   displayName: 'Deploy to Stage'
