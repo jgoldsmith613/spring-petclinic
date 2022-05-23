@@ -141,6 +141,7 @@ stages:
               namespace: 'stage'
   - deployment: kustomize
     displayName: Update Kustomize Image
+    dependsOn: Secret
     pool:
       vmImage: 'ubuntu-latest'
     container: 'quay.io/wpernath/kustomize-ubi:latest'
@@ -160,6 +161,7 @@ stages:
             artifact: stage
   - deployment: update_git
     displayName: Update git stage
+    dependsOn: kustomize
     pool:
       vmImage: 'ubuntu-latest'
     environment: 'openshift.stage'
