@@ -110,6 +110,7 @@ stages:
           steps:
           - checkout: config
             persistCredentials: true
+            clean: true
           - script: |
               cd envs/dev
               kustomize edit set image $(ACR_RegistryName)/$(springPetRepository)=$(ACR_RegistryName)/$(springPetRepository):$(tag)
@@ -129,6 +130,7 @@ stages:
           steps:
           - checkout: config
             persistCredentials: true
+            clean: true
           - download: current
             artifact: dev
           - script: |
@@ -181,6 +183,7 @@ stages:
           steps:
           - checkout: config
             persistCredentials: true
+            clean: true
           - script: |
               cd envs/stage
               kustomize edit set image $(ACR_RegistryName)/$(springPetRepository)=$(ACR_RegistryName)/$(springPetRepository):$(tag)
